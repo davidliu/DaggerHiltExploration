@@ -1,2 +1,3 @@
 rootProject.name='DaggerHilt'
 include ':app'
+include ':featuremodule'
