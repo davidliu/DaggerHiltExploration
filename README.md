@@ -76,8 +76,38 @@ interface RepositoryLocator {
 We can then use the EntryPointAccessors utility class to access the component through the interface.
 
 ````
-EntryPointAccessors.fromActivity(this, RepositoryLocator::class.java).getRepository()
+EntryPointAccessors.fromApplication(applicationContext, RepositoryLocator::class.java).getRepository()
 ````
 
-I avoid using provision methods in my projects, but if you use them currently, this would be how you migrate.
+Note that unlike module bindings, entry point interfaces are not inherited by their subcomponents, so an EntryPoint installed
+on an ApplicationComponent can only be accessed using the `fromApplication` accessor.
+
+I avoid using provision methods in my projects, preferring to have these things injected directly, but if you use them currently, this would be how you migrate.
+
+### Gradle Multi Modules
+
+A library module can now install into the app module's Component without any interaction needed at the app module level.
+
+````
+// Declared in the feature module
+@Module
+@InstallIn(ApplicationComponent::class)
+object FeatureModule {
+    @Provides
+    fun feature() = Feature()
+}
+
+// main app can be injected with Feature
+@AndroidEntryPoint
+class MainActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var feature: Feature
+    ....
+}
+
+````
+
+This is a nice quality of life change from dagger-android, where a library module would need to manually be added to the
+app's graph. Potentially a little sketch though, if 3rd party libraries can abuse this to latch onto your graph. It'd be an interesting attack vector, at the very least.
 
