@@ -1,6 +1,6 @@
 # DaggerHiltExploration
 
-An exploration into the Hilt library introduced in [Dagger 2.28](https://dagger.dev/api/2.28/).
+An exploration into the Hilt library introduced in [Dagger 2.28](https://dagger.dev/api/2.28/). Keep in mind, that at the time of this writing (5/29/2020), Hilt is still in alpha, and no docs have been released other than the sparse Javadocs, so my interpretations may be erroneous. Feel free to let me know if I've got anything wrong by filing an issue or messaging me on Reddit (/u/Pzychotix).
 
 ### `@HiltAndroidApp`
 
