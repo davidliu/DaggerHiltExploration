@@ -7,15 +7,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.deviange.daggerhilt.R
-import com.deviange.daggerhilt.Repository
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {
-
-    @Inject
-    lateinit var repository: Repository
 
     companion object {
         fun newInstance() = MainFragment()
