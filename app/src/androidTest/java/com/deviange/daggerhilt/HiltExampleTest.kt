@@ -8,6 +8,7 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,7 +34,7 @@ class HiltExampleTest {
     @Test
     fun verifySomethingIsDone() {
         launch(MainActivity::class.java)
-        assert(testFeature.invocationCount == 1)
+        Assert.assertEquals(testFeature.invocationCount, 1)
     }
 
     class TestFeature : Feature {
