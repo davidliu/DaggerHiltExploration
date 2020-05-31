@@ -10,11 +10,15 @@ import dagger.hilt.android.components.ApplicationComponent
 @InstallIn(ApplicationComponent::class)
 object FeatureModule {
     @Provides
-    fun feature() = Feature()
+    fun feature(): Feature = RealFeature()
 }
 
-class Feature {
-    fun doThing() {
+interface Feature {
+    fun doThing()
+}
+
+class RealFeature : Feature {
+    override fun doThing() {
         Log.v("Feature", "Doing the thing!")
     }
 }

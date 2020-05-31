@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
 
-        EntryPointAccessors.fromApplication(applicationContext, RepositoryLocator::class.java).getRepository()
+        EntryPointAccessors.fromActivity(this, RepositoryLocator::class.java).getRepository()
         feature.doThing()
 
         if (savedInstanceState == null) {
