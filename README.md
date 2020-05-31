@@ -2,6 +2,23 @@
 
 An exploration into the Hilt library introduced in [Dagger 2.28](https://dagger.dev/api/2.28/). Keep in mind, that at the time of this writing (5/29/2020), Hilt is still in alpha, and no docs have been released other than the sparse Javadocs, so my interpretations may be erroneous. Feel free to let me know if I've got anything wrong by filing an issue or messaging me on Reddit (/u/Pzychotix).
 
+## Table of Contents
+  * [Hilt Basics](#hilt-basics)
+    + [@HiltAndroidApp](#hiltandroidapp)
+    + [@AndroidEntryPoint](#androidentrypoint)
+    + [@InstallIn](#installin)
+    + [Components](#components)
+    + [@EntryPoint/EntryPointAccessors](#entrypointentrypointaccessors)
+    + [Gradle Multi Modules](#gradle-multi-modules)
+  * [Testing](#testing)
+    + [@UninstallModule](#uninstallmodule)
+    + [@BindValue and others](#bindvalue-and-others)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+
+## Hilt Basics
+
 ### `@HiltAndroidApp`
 
 The first annotation required to use Hilt. This must be placed on your `Application` class.
