@@ -111,3 +111,55 @@ class MainActivity : AppCompatActivity() {
 This is a nice quality of life change from dagger-android, where a library module would need to manually be added to the
 app's graph. Potentially a little sketch though, if 3rd party libraries can abuse this to latch onto your graph. It'd be an interesting attack vector, at the very least.
 
+## Testing
+
+On the testing side, Hilt has really great support compared to barebones Dagger. It provides some simple ways to replace a dependency, whereas Dagger by itself requires quite a bit of organization to do the same.
+
+Thanks to @remcomokveld for kicking this off by [adding an example Hilt test.](https://github.com/davidliu/DaggerHiltExploration/blob/master/app/src/androidTest/java/com/deviange/daggerhilt/HiltExampleTest.kt)
+
+### [`@UninstallModule`](https://dagger.dev/api/2.28/dagger/hilt/android/testing/UninstallModules.html)
+
+Like the name says, this removes a module that's been add with `@InstallIn`. This is super useful for replacing production dependencies with a test version by installing your own test module. 
+
+````
+@RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
+@UninstallModules(FeatureModule::class)
+class HiltExampleTest {
+
+    @Module
+    @InstallIn(ApplicationComponent::class)
+    object FeatureModule {
+        @Provides
+        fun feature(): Feature = TestFeature()
+    }
+}
+````
+
+The resulting component is still compile-time checked, so if you uninstall a module 
+without replacing the needed dependencies (or install a new one without uninstalling the old),
+you'll get the standard Dagger errors to cover for you. Additionally, both the `@UninstallModules` 
+and the above `@InstallIn` are local to the test class, so they don't affect what you do in other test classes. 
+
+### [`@BindValue`](https://dagger.dev/api/2.28/dagger/hilt/android/testing/BindValue.html) and others
+
+As an alternative to creating and installing a new module for a test dependency, you can use the `@Bind` family
+of annotations to directly add it to the component. This is also important if you want to interact with the test dependency
+during the test. Keep in mind that Dagger binds by exact type, and this is no different.
+
+````
+@HiltAndroidTest
+@UninstallModules(FeatureModule::class)
+class HiltExampleTest {
+
+    private val testFeature = TestFeature()
+    
+    @BindValue
+    @JvmField
+    val feature: Feature = testFeature
+}
+````
+
+A neat thing that can be done with these test level binds is that they can easily replace classes 
+that are not provided through modules, but through the constructor `@Inject` annotation. 
+While module overriding is common in Dagger for test overrides, this is something new that's very convenient.
