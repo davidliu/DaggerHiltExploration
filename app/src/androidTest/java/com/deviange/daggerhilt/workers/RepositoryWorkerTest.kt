@@ -11,10 +11,7 @@ import androidx.work.testing.WorkManagerTestInitHelper
 import androidx.work.workDataOf
 import com.deviange.daggerhilt.MainAppModule
 import com.deviange.daggerhilt.Repository
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
@@ -23,7 +20,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import javax.inject.Inject
-import javax.inject.Singleton
 
 @HiltAndroidTest
 @UninstallModules(MainAppModule::class)
@@ -35,8 +31,9 @@ class RepositoryWorkerTest {
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
-    @Inject
-    lateinit var testRepository: Repository
+    @JvmField
+    @BindValue
+    val testRepository: Repository = TestRepository()
 
     @Before
     fun beforeEach() {
@@ -63,15 +60,6 @@ class RepositoryWorkerTest {
         val workInfo = workManager.getWorkInfoById(request.id).get()
         val outputData = workInfo.outputData
         Assert.assertEquals(workDataOf("counter" to Int.MAX_VALUE), outputData)
-    }
-
-    @InstallIn(ApplicationComponent::class)
-    @Module
-    object TestWorkerModule {
-
-        @Singleton // IMPORTANT: Scope the object to receive the same object in the worker and the test.
-        @Provides
-        fun provideFakeRepository(): Repository = TestRepository()
     }
 
     class TestRepository : Repository {
