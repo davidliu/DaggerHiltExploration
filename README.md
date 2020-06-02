@@ -13,6 +13,14 @@ An exploration into the Hilt library introduced in [Dagger 2.28](https://dagger.
   * [Testing](#testing)
     + [@UninstallModule](#uninstallmodule)
     + [@BindValue and others](#bindvalue-and-others)
+    + [`@Inject` in tests](#--inject--in-tests)
+  * [AndroidX Goodies](#androidx-goodies)
+    + [Hilt-Work](#hilt-work)
+      - [`@WorkerInject`](#workerinject)
+      - [HiltWorkerFactory](#hiltworkerfactory)
+    + [Hilt-Lifecycle-Viewmodel](#hilt-lifecycle-viewmodel)
+      - [`@ViewModelInject`](#viewmodelinject)
+      - [Other Configuration](#other-configuration)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
@@ -128,11 +136,12 @@ class MainActivity : AppCompatActivity() {
 This is a nice quality of life change from dagger-android, where a library module would need to manually be added to the
 app's graph. Potentially a little sketch though, if 3rd party libraries can abuse this to latch onto your graph. It'd be an interesting attack vector, at the very least.
 
+
 ## Testing
 
 On the testing side, Hilt has really great support compared to barebones Dagger. It provides some simple ways to replace a dependency, whereas Dagger by itself requires quite a bit of organization to do the same.
 
-Thanks to @remcomokveld for kicking this off by [adding an example Hilt test.](https://github.com/davidliu/DaggerHiltExploration/blob/master/app/src/androidTest/java/com/deviange/daggerhilt/HiltExampleTest.kt)
+Thanks to [@remcomokveld](https://github.com/remcomokveld) for kicking this off by [adding an example Hilt test.](https://github.com/davidliu/DaggerHiltExploration/blob/master/app/src/androidTest/java/com/deviange/daggerhilt/HiltExampleTest.kt)
 
 ### [`@UninstallModule`](https://dagger.dev/api/2.28/dagger/hilt/android/testing/UninstallModules.html)
 
@@ -180,3 +189,89 @@ class HiltExampleTest {
 A neat thing that can be done with these test level binds is that they can easily replace classes 
 that are not provided through modules, but through the constructor `@Inject` annotation. 
 While module overriding is common in Dagger for test overrides, this is something new that's very convenient.
+
+### `@Inject` in tests
+
+Your tests can be injected as well! They'll grab the dependencies from the component that's configured for that test class.
+
+````
+@HiltAndroidTest
+class SomeTest {
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
+    
+    @Inject 
+    lateinit val dependency: Dependency
+
+    @Before
+    fun beforeEach() {
+        hiltRule.inject()
+        ...
+    }
+}
+````
+
+## AndroidX Goodies
+
+On the AndroidX side, they've been hard at work at integrating Hilt into some specific components. They're currently available as snapshot builds from the [androidx repo](https://androidx.dev/):
+
+````
+implementation "androidx.hilt:hilt-work:1.0.0-SNAPSHOT"
+implementation "androidx.hilt:hilt-common:1.0.0-SNAPSHOT"
+implementation "androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-SNAPSHOT"
+kapt "androidx.hilt:hilt-compiler:1.0.0-SNAPSHOT"
+````
+
+Thanks to [@R4md4c](https://github.com/R4md4c) for putting in the legwork on all this!
+
+### Hilt-Work
+
+The Hilt-Work artifact provides automatic generation of the common multi-bind worker factory pattern (if you don't know what this is, then now you won't have to!) It will find all workers annotated with `@WorkerInject` and create a `HiltWorkerFactory` that can be used with your WorkManager to inject your workers.
+
+#### `@WorkerInject`
+
+Simply annotate your Workers with `@WorkerInject` and `@Assisted` for the `Context` and `WorkerParameters` in the constructor. Any additional injected dependencies can just be added into the constructor.
+
+````
+class RepositoryWorker @WorkerInject constructor(
+    private val repository: Repository,
+    @Assisted private val context: Context,
+    @Assisted private val workerParameters: WorkerParameters
+) : Worker(context, workerParameters)
+````
+
+#### HiltWorkerFactory
+
+To finish the Hilt-Work setup, you just need to attach it to your WorkManager like so:
+
+````
+@HiltAndroidApp
+class MainApplication : Application(), Configuration.Provider {
+
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+
+    override fun getWorkManagerConfiguration(): Configuration =
+        Configuration.Builder().setWorkerFactory(workerFactory).build()
+}
+````
+
+### Hilt-Lifecycle-Viewmodel
+
+Very similar to the Hilt-Work artifact, this artifact handles all the multi-map binding for ViewModel creation. 
+
+#### `@ViewModelInject`
+
+Simply annotate your ViewModel with `@ViewModelInject`. The constructor can take in any dependencies available at the `@ActivityRetainedComponent` scope, as well as an optional SavedStateHandle marked with an `@Assisted` annotation.
+````
+class MainViewModel 
+@ViewModelInject 
+constructor(
+    private val repository: Repository,
+    @Assisted private val savedStateHandle: SavedStateHandle
+): ViewModel()
+````
+
+#### Other Configuration
+
+None! As long as the ViewModel is retrieved from an `@AndroidEntryPoint` annotated Activity/Fragment, it will automatically handle getting the injected ViewModel.
