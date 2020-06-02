@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.deviange.daggerhilt.R
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,7 +28,18 @@ class MainFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
-        // TODO: Use the ViewModel
+
+        val messageTextView = requireView().findViewById<TextView>(R.id.message)
+        viewModel.counterState.observe(viewLifecycleOwner, Observer { counter ->
+            messageTextView.text = "MainFragment Counter: $counter"
+        })
     }
 
+    override fun onStop() {
+        super.onStop()
+        if (requireActivity().isChangingConfigurations) {
+            val previousValue = viewModel.counterState.value!!
+            viewModel.counterState.postValue(previousValue + 1)
+        }
+    }
 }
