@@ -1,3 +1,9 @@
 package com.deviange.daggerhilt
 
-class Repository
+interface Repository {
+    var counter: Int
+}
+
+class RealRepository : Repository {
+    override var counter: Int = 0
+}
