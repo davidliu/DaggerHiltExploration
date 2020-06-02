@@ -1,6 +1,10 @@
 package com.deviange.daggerhilt
 
-import androidx.test.core.app.ActivityScenario.launch
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.deviange.featuremodule.Feature
 import com.deviange.featuremodule.FeatureModule
@@ -25,6 +29,9 @@ class HiltExampleTest {
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
 
+    @get:Rule
+    var activityScenarioRule = ActivityScenarioRule(MainActivity::class.java)
+
     private val testFeature = TestFeature()
 
     @BindValue
@@ -33,8 +40,16 @@ class HiltExampleTest {
 
     @Test
     fun verifySomethingIsDone() {
-        launch(MainActivity::class.java)
         Assert.assertEquals(testFeature.invocationCount, 1)
+    }
+
+    @Test
+    fun verifyCounterIsDisplayedCorrectly_AcrossRecreation() {
+        onView(withText("MainFragment Counter: 1")).check(matches(isDisplayed()))
+
+        activityScenarioRule.scenario.recreate()
+
+        onView(withText("MainFragment Counter: 2")).check(matches(isDisplayed()))
     }
 
     class TestFeature : Feature {
